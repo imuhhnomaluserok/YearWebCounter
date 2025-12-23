@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Year_countdownB6.2-Fixed - Full Complete Edition</title>
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #1b2735, #090a0f);
+  color: white;
+  overflow-x: hidden;
+  transition: background 0.5s, color 0.5s;
+}
+.navbar {
+  position: fixed; top: 0; left: 0; width: 100%;
+  background: rgba(0,0,0,0.6); display: flex; justify-content: center;
+  padding: 10px; z-index: 12000;
+}
+.navbar button {
+  margin: 0 6px; padding: 8px 15px;
+  border: 1px solid white; background: rgba(255,255,255,0.1);
+  color: white; border-radius: 6px; cursor: pointer;
+}
+.navbar button:hover { background: rgba(255,255,255,0.3); }
+.section { display: none; justify-content: center; align-items: center;
+  flex-direction: column; height: 100vh; text-align: center; }
+.active { display: flex; }
+.countdown-container {
+  position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
+  text-align: center; max-width: 600px; z-index: 9999;
+}
+.countdown-container h1 { font-size: 2.5em; }
+.result { font-size: 1.5em; margin-top: 15px; }
+button {
+  cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid #fff;
+  color: white; border-radius: 8px; padding: 10px 20px; margin: 5px; transition: 0.3s;
+}
+button:hover { background: rgba(255,255,255,0.3); }
+.modal {
+  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 99999;
+}
+.modal-content {
+  background: rgba(30,30,30,0.95); color: white; padding: 20px;
+  border-radius: 12px; width: 300px; text-align: center;
+  box-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+.modal-content button { margin-top: 10px; width: 80%; }
+.lang-buttons {
+  position: fixed; top: 15px; right: 15px; z-index: 13000;
+}
+.lang-buttons button {
+  background: rgba(255,255,255,0.15); border: 1px solid #fff; color: #fff;
+  border-radius: 6px; margin-left: 6px; padding: 4px 10px;
+}
+footer {
+  position: fixed; bottom: 5px; right: 10px; font-size: 0.8em; opacity: 0.7;
+}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <button onclick="showSection('countdown')">⏰ Countdown</button>
+  <button onclick="showSection('games')">🎮 Games</button>
+  <button onclick="showSection('calculator')">🧮 Calculator</button>
+  <button onclick="showSection('music')">🎵 Music</button>
+  <button onclick="showSection('achievements')">🏆 Achievements</button>
+  <button onclick="openSettings()">⚙️ Settings</button>
+</div>
+
+<div class="lang-buttons">
+  <button onclick="changeLanguage('ja')">🇯🇵</button>
+  <button onclick="changeLanguage('en')">🇺🇸</button>
+</div>
+
+<div id="countdown" class="section active">
+  <div class="countdown-container">
+    <h1 data-i18n="title">⏰ 年までのカウントダウン</h1>
+    <input type="number" id="yearInput" placeholder="例: 2030" min="2025" max="2100">
+    <button data-i18n="calculate" onclick="calculateCountdown()">計算する</button>
+    <div id="result" class="result"></div>
+  </div>
+</div>
+
+<!-- ゲームセンター -->
+<div id="games" class="section">
+  <h2>🎮 Game Center</h2>
+  <p>プレイするゲームを選んでください</p>
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;">
+    <button onclick="startGame('clicker')">🖱 クリッククリッカー</button>
+    <button onclick="startGame('2048')">🧩 2048</button>
+    <button onclick="startGame('minesweeper')">💣 マインスイーパ</button>
+    <button onclick="startGame('flappy')">🐦 フラッピーバード</button>
+  </div>
+  <div id="gameArea" style="margin-top:20px;"></div>
+</div>
+
+<div id="calculator" class="section"></div>
+<div id="music" class="section"></div>
+<div id="achievements" class="section"></div>
+
+<div id="settingsModal" class="modal">
+  <div class="modal-content">
+    <h2>⚙️ 設定 / Settings</h2>
+    <label><input type="checkbox" id="darkModeCheck"> ダークテーマ</label><br><br>
+    <label>音量: <input type="range" id="volumeSlider" min="0" max="100" value="70"></label><br><br>
+    <button onclick="clearAllData()" style="background:red;">⚠️ すべてのデータを消去</button><br>
+    <button onclick="closeModal('settingsModal')">閉じる</button>
+  </div>
+</div>
+
+<footer>Created by GPT_Code — Special Thanks: Claude</footer>
+
+<script>
+const translations={ja:{title:"⏰ 年までのカウントダウン",calculate:"計算する",newyear:"🎉 あけましておめでとう！"},en:{title:"⏰ Countdown to the New Year",calculate:"Calculate",newyear:"🎉 Happy New Year!"}};
+let currentLang=localStorage.getItem("lang")||"ja";
+function t(k){return translations[currentLang][k]||k;}
+function changeLanguage(lang){currentLang=lang;localStorage.setItem("lang",lang);updateUI();}
+function updateUI(){document.querySelectorAll("[data-i18n]").forEach(e=>{e.textContent=t(e.getAttribute("data-i18n"));});}
+function showSection(id){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function openSettings(){document.getElementById("settingsModal").style.display="flex";}
+function closeModal(id){document.getElementById(id).style.display="none";}
+function clearAllData(){if(confirm("⚠️ 本当にすべてのデータを削除しますか？")){localStorage.clear();alert("🧹 データをすべて削除しました！");location.reload();}}
+
+let countdownTimer=null;
+function calculateCountdown(){
+  const year=parseInt(document.getElementById("yearInput").value);
+  if(!year||year<2025)return;
+  const target=new Date(`Jan 1, ${year} 00:00:00`).getTime();
+  if(countdownTimer)clearInterval(countdownTimer);
+  updateCountdown(target);
+  countdownTimer=setInterval(()=>updateCountdown(target),1000);
+}
+function updateCountdown(target){
+  const now=new Date().getTime();
+  const diff=target-now;
+  if(diff<=0){
+    clearInterval(countdownTimer);
+    document.getElementById("result").textContent=t("newyear");
+    playNewYearSound();
+    unlockAchievement("初めてのカウントダウン");
+    return;
+  }
+  const d=Math.floor(diff/(1000*60*60*24));
+  const h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+  const m=Math.floor((diff%(1000*60*60))/(1000*60));
+  const s=Math.floor((diff%(1000*60))/1000);
+  document.getElementById("result").textContent=`${d}日 ${h}時間 ${m}分 ${s}秒`;
+}
+document.addEventListener("click",()=>{if(!window.mainAudioCtx){window.mainAudioCtx=new (window.AudioContext||window.webkitAudioContext)();}}, {once:true});
+function playNewYearSound(){
+  if(!window.mainAudioCtx)return;
+  const ctx=window.mainAudioCtx;
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);
+  o.type="sine";o.frequency.value=523.25;
+  g.gain.setValueAtTime(0.2,ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1);
+  o.start(ctx.currentTime);o.stop(ctx.currentTime+1);
+}
+
+/* === ゲーム関連 === */
+let clickCount=0;let gameInterval=null;
+function startGame(game){
+  const area=document.getElementById("gameArea");
+  area.innerHTML="";
+  clearInterval(gameInterval);
+  switch(game){
+    case"clicker":startClicker(area);break;
+    case"2048":start2048(area);break;
+    case"minesweeper":startMinesweeper(area);break;
+    case"flappy":startFlappy(area);break;
+  }
+}
+function startClicker(a){a.innerHTML=`<h3>💥 クリックでスコアアップ！</h3><button id="clickBtn" style="font-size:1.5em;padding:20px;">Click!</button><div id="clickScore" style="margin-top:10px;">Score: 0</div>`;document.getElementById("clickBtn").onclick=()=>{clickCount++;document.getElementById("clickScore").textContent=`Score: ${clickCount}`;if(clickCount===100)unlockAchievement("クリック好き");if(clickCount===1000)unlockAchievement("クリック狂");if(clickCount===10000)unlockAchievement("とっても暇人");};}
+function start2048(a){a.innerHTML=`<canvas id="game2048" width="240" height="240" style="background:#222;border:2px solid #555;"></canvas><p>矢印キーで操作</p>`;const ctx=document.getElementById("game2048").getContext("2d");let g=Array(4).fill().map(()=>Array(4).fill(0));function rL(m){return m[0].map((_,i)=>m.map(r=>r[3-i]));}function rR(m){return m[0].map((_,i)=>m.map(r=>r[i]).reverse());}function spawn(){let e=[];for(let y=0;y<4;y++)for(let x=0;x<4;x++)if(!g[y][x])e.push([x,y]);if(!e.length)return;const[x,y]=e[Math.floor(Math.random()*e.length)];g[y][x]=Math.random()<0.9?2:4;}function draw(){ctx.clearRect(0,0,240,240);for(let y=0;y<4;y++)for(let x=0;x<4;x++){const v=g[y][x];ctx.fillStyle=v?`hsl(${Math.log2(v)*30},80%,60%)`:"#333";ctx.fillRect(x*60+2,y*60+2,56,56);if(v){ctx.fillStyle="#fff";ctx.font="20px sans-serif";ctx.fillText(v,x*60+22,y*60+38);}}}function move(dir){if(dir==="ArrowUp")g=rL(g);if(dir==="ArrowDown")g=rR(g);if(dir==="ArrowRight")g=g.map(r=>r.reverse());g=g.map(r=>{const n=r.filter(x=>x);for(let i=0;i<n.length-1;i++){if(n[i]===n[i+1]){n[i]*=2;n.splice(i+1,1);}}while(n.length<4)n.push(0);return n;});if(dir==="ArrowUp")g=rR(g);if(dir==="ArrowDown")g=rL(g);if(dir==="ArrowRight")g=g.map(r=>r.reverse());}spawn();spawn();draw();window.onkeydown=e=>{if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)){const before=JSON.stringify(g);move(e.key);if(JSON.stringify(g)!==before){spawn();draw();}}};}
+function startMinesweeper(a){const size=5,mines=5;const grid=Array(size).fill().map(()=>Array(size).fill(0));for(let i=0;i<mines;i++){let x,y;do{x=Math.floor(Math.random()*size);y=Math.floor(Math.random()*size);}while(grid[y][x]===9);grid[y][x]=9;}for(let y=0;y<size;y++)for(let x=0;x<size;x++){if(grid[y][x]===9)continue;let n=0;for(let yy=-1;yy<=1;yy++)for(let xx=-1;xx<=1;xx++)if(grid[y+yy]?.[x+xx]===9)n++;grid[y][x]=n;}a.innerHTML=`<div id="mineGrid" style="display:grid;grid-template-columns:repeat(${size},40px);gap:4px;"></div>`;const gEl=document.getElementById("mineGrid");for(let y=0;y<size;y++)for(let x=0;x<size;x++){const b=document.createElement("button");b.style.width="40px";b.style.height="40px";b.onclick=()=>{if(grid[y][x]===9){b.textContent="💣";b.style.background="red";alert("💥 Boom!");startMinesweeper(a);}else{b.textContent=grid[y][x]||"";b.disabled=true;}};gEl.appendChild(b);}}
+function startFlappy(a){a.innerHTML=`<canvas id="flappy" width="300" height="400" style="background:skyblue;border:2px solid #444;"></canvas>`;const ctx=document.getElementById("flappy").getContext("2d");let y=200,v=0,g=0.5;let pipes=[{x:300,gap:150,top:Math.random()*200+50}];let s=0;function draw(){ctx.fillStyle="skyblue";ctx.fillRect(0,0,300,400);ctx.fillStyle="yellow";ctx.beginPath();ctx.arc(100,y,10,0,Math.PI*2);ctx.fill();pipes.forEach(p=>{ctx.fillStyle="green";ctx.fillRect(p.x,0,30,p.top);ctx.fillRect(p.x,p.top+p.gap,30,400-(p.top+p.gap));});ctx.fillStyle="#fff";ctx.fillText("Score:"+s,10,20);}function up(){v=-7;}function update(){v+=g;y+=v;pipes.forEach(p=>p.x-=2);if(pipes[0].x<-30){pipes.shift();s++;pipes.push({x:300,gap:150,top:Math.random()*200+50});}const hit=pipes.some(p=>100>p.x&&100<p.x+30&&(y<p.top||y>p.top+p.gap));if(y>400||y<0||hit){unlockAchievement("初めてのフラッピー");clearInterval(gameInterval);alert("Game Over!");}draw();}document.onkeydown=e=>{if(e.code==="Space")up();};gameInterval=setInterval(update,30);}
+
+/* === 電卓 === */
+const calcEl=document.getElementById("calculator");
+calcEl.innerHTML=`<h2>🧮 Calculator</h2><div id="calcDisplay" style="font-size:2em;background:rgba(255,255,255,0.1);padding:10px 20px;border-radius:8px;width:200px;text-align:right;">0</div><div id="calcButtons" style="margin-top:10px;display:grid;grid-template-columns:repeat(4,60px);gap:5px;"></div>`;
+["7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+"].forEach(t=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>calcPress(t);document.getElementById("calcButtons").appendChild(b);});
+let calcInput="";function calcPress(v){if(v==="="){try{calcInput=eval(calcInput).toString();unlockAchievement("初めての計算");}catch{calcInput="Error";}}else calcInput+=v;document.getElementById("calcDisplay").textContent=calcInput;}
+
+/* === ミュージック === */
+document.getElementById("music").innerHTML=`<h2>🎵 Music Player</h2><input type="file" id="musicFile" accept=".mp3,.wav,.ogg"><br><br><button onclick="playMusic()">▶️ 再生</button><button onclick="pauseMusic()">⏸ 停止</button><button onclick="toggleLoop()">🔁 ループ</button><audio id="audioPlayer" controls style="margin-top:20px;width:80%;"></audio>`;
+function playMusic(){const f=document.getElementById("musicFile").files[0];if(f){const u=URL.createObjectURL(f);const a=document.getElementById("audioPlayer");a.src=u;a.play();unlockAchievement("音楽を再生した");}else alert("音楽ファイルを選択してください！");}
+function pauseMusic(){document.getElementById("audioPlayer").pause();}
+function toggleLoop(){const a=document.getElementById("audioPlayer");a.loop=!a.loop;alert(a.loop?"ループ再生: ON":"ループ再生: OFF");}
+
+/* === 実績 === */
+let achievements={click100:{name:"クリック好き",unlocked:false},click1000:{name:"クリック狂",unlocked:false},click10000:{name:"とっても暇人",unlocked:false},firstCountdown:{name:"初めてのカウントダウン",unlocked:false},firstCalc:{name:"初めての計算",unlocked:false},firstFlappy:{name:"初めてのフラッピー",unlocked:false},firstMusic:{name:"音楽を再生した",unlocked:false}};
+if(localStorage.getItem("achievements"))achievements=JSON.parse(localStorage.getItem("achievements"));
+function unlockAchievement(n){const k=Object.keys(achievements).find(k=>achievements[k].name===n);if(!k)return;if(achievements[k].unlocked)return;achievements[k].unlocked=true;localStorage.setItem("achievements",JSON.stringify(achievements));showAchievementToast(n);playAchievementSound();renderAchievements();}
+function renderAchievements(){const a=document.getElementById("achievements");a.innerHTML="<h2>🏆 実績一覧</h2>";const c=document.createElement("div");c.style="display:flex;flex-direction:column;align-items:center;gap:8px;";Object.values(achievements).forEach(x=>{const d=document.createElement("div");d.style=`padding:8px 15px;border-radius:8px;width:250px;text-align:left;background:${x.unlocked?"rgba(255,215,0,0.2)":"rgba(255,255,255,0.1)"};border:1px solid ${x.unlocked?"#FFD700":"#555"};`;d.innerHTML=`${x.unlocked?"🏆 ":"🔒 "}${x.name}`;c.appendChild(d);});a.appendChild(c);}
+function showAchievementToast(n){let t=document.getElementById("achievementToast");if(!t){t=document.createElement("div");t.id="achievementToast";t.style=`position:fixed;top:30px;right:30px;background:rgba(30,30,30,0.9);color:white;padding:15px 25px;border-radius:12px;font-size:18px;display:none;align-items:center;gap:10px;z-index:999999;`;document.body.appendChild(t);}t.innerHTML=`🏆 実績解除: <b>${n}</b>`;t.style.display="flex";t.onmouseenter=()=>{t.style.boxShadow="0 0 10px gold";};t.onmouseleave=()=>{t.style.boxShadow="none";};setTimeout(()=>t.style.display="none",3000);}
+function playAchievementSound(){if(!window.mainAudioCtx)return;const c=window.mainAudioCtx;const o1=c.createOscillator(),o2=c.createOscillator(),g=c.createGain();o1.type="triangle";o2.type="sine";o1.frequency.setValueAtTime(660,c.currentTime);o2.frequency.setValueAtTime(880,c.currentTime);g.gain.setValueAtTime(0.15,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+1.0);o1.connect(g);o2.connect(g);g.connect(c.destination);o1.start();o2.start();o1.stop(c.currentTime+1);o2.stop(c.currentTime+1);}
+window.addEventListener("load",()=>{updateUI();renderAchievements();});
+</script>
+</body>
+</html>
